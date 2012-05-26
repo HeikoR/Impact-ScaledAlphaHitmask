@@ -16,135 +16,131 @@ It is intended to be used to detect mouse clicks on partially transparent button
 	* place a `samplebtn.png` image into your `[Project]/media/btns` directory.
 		(Note: to test the `ScaledAlphaHitmask` this image needs to have an alpha channel with transparent and non-transparent pixels)
 	* copy relevant code from `main.js` snippet into your own `main.js` code.
-	* download [ButtonStateMachine][] plugin and place plugin into your `[Project]/lib/plugins` directory.
-			(Note: this plugin is not required to use `ScaledAlphaHitmask`, but it is required to run the demo code.)
+	* download [ButtonStateMachine][] plugin and place plugin into your `[Project]/lib/plugins` directory. (Note: this plugin is not required to use `ScaledAlphaHitmask`, but it is required to run the demo code.)
 
-<pre>
-// -------------------------------------------------------------------------------------------------------------
-// main.js
-// -------------------------------------------------------------------------------------------------------------
-ig.module( 
-	'game.main' 
-)
-.requires(
-	'impact.game',
-	// ...
-	// ...
-	'game.entities.demogamebtn'
-)
-.defines(function(){
+* main.js
 
-MyGame = ig.Game.extend({
-	
-	// ...
-	// ...
-	
-	init: function() {
-		// ...
-		// ...
-
-		// Capture Mouse Down events ... 
-		ig.input.bind(ig.KEY.MOUSE1, 'click');		// note: we check for 'click' to determine if mouse down (see IsMouseDown() in DemoGameBtn.js)
-	  
-	  
-		// Test DemoGameBtn
-		var demoGamebtn = ig.game.spawnEntity(EntityDemoGamebtn, 100, 100, { image: 'samplebtn.png', width: 106, height: 120});
-		
-		window.focus();
-		ig.system.canvas.onclick = function() {
-			window.focus();
-		};
-	}
-});
-
-</pre>
-
-
-<pre>
-// -------------------------------------------------------------------------------------------------------------
-// DemoGamebtn.js
-// -------------------------------------------------------------------------------------------------------------
-ig.module(
-	'game.entities.demogamebtn'
-)
-.requires(
-	'plugins.scaled-alpha-hitmask',
-	'plugins.button-state-machine',
-	'impact.entity'
-)
-.defines(function() {
-	EntityDemoGamebtn = ig.Entity.extend({
-		size: {x: 16, y: 16},
-		
-		btnStateMachine: null,
-		hitmask: null,
-		
 		// -------------------------------------------------------------------------------------------------------------
-		// Button States
+		// main.js
 		// -------------------------------------------------------------------------------------------------------------
-		endClick: function() { this.currentAnim = this.anims.btnNormal;	},
-		endClickIgnore: function() { this.currentAnim = this.anims.btnNormal; },
-		endHover: function() { this.currentAnim = this.anims.btnNormal;	},
-		startClick: function() { this.currentAnim = this.anims.btnDown;	},
-		startHover: function() { this.currentAnim = this.anims.btnHover; },
-		
-		// -------------------------------------------------------------------------------------------------------------
-		// Alpha Hit Detection
-		// -------------------------------------------------------------------------------------------------------------
-		// hittest - returns true if mouse cursor within bounds, else false
-		hittest: function() {
-			if ((ig.input.mouse.x > this.pos.x && ig.input.mouse.x < (this.pos.x + this.size.x)) &&
-				(ig.input.mouse.y > this.pos.y && ig.input.mouse.y < (this.pos.y + this.size.y)))
-			{
-				// if we have hitmask defined then check if we inside or outside of hitmask,
-				// if no hitmask then we already inside and return true
-				if (this.hitmask) {
-					return this.hitmask.hittest(ig.input.mouse.x - this.pos.x, ig.input.mouse.y - this.pos.y, 0 /* we only interested in frame 0 so no need to pass any other*/);
-				} else {
-					return true;
-				}
+		ig.module( 
+			'game.main' 
+		)
+		.requires(
+			'impact.game',
+			// ...
+			// ...
+			'game.entities.demogamebtn'
+		)
+		.defines(function(){
+
+		MyGame = ig.Game.extend({
+			
+			// ...
+			// ...
+			
+			init: function() {
+				// ...
+				// ...
+
+				// Capture Mouse Down events ... 
+				ig.input.bind(ig.KEY.MOUSE1, 'click');		// note: we check for 'click' to determine if mouse down (see IsMouseDown() in DemoGameBtn.js)
+			  
+			  
+				// Test DemoGameBtn
+				var demoGamebtn = ig.game.spawnEntity(EntityDemoGamebtn, 100, 100, { image: 'samplebtn.png', width: 106, height: 120});
+				
+				window.focus();
+				ig.system.canvas.onclick = function() {
+					window.focus();
+				};
 			}
-			return false;						// hittest failed - mouse outside of entity
-		},
-		init: function(x, y, settings) {
-			
-			this.animSheet = new ig.AnimationSheet('media/btns/' + settings.image , settings.width, settings.height);
-			this.addAnim('btnNormal', 1, [0]);
-			this.addAnim('btnHover', 2, [1]);
-			this.addAnim('btnDown', 3, [2]);
-			this.addAnim('btnDisabled', 4, [3]);
-			this.currentAnim = this.anims.btnNormal;
-			this.size.x = settings.width;
-			this.size.y = settings.height;
-			
-			// ...
-			// ...
-			this.btnStateMachine = new ig.ButtonStateMachine();
-			this.btnStateMachine.isMouseInside = this.hittest.bind(this);
-			this.btnStateMachine.isMouseDown = function() { return ig.input.state('click'); };
-			this.btnStateMachine.startClick = this.startClick.bind(this);
-			this.btnStateMachine.endClick = this.endClick.bind(this);
-			this.btnStateMachine.startHover = this.startHover.bind(this);
-			this.btnStateMachine.endHover = this.endHover.bind(this);
-			this.btnStateMachine.endClickIgnore = this.endClickIgnore.bind(this);
-			
-			this.hitmask = new ig.ScaledAlphaHitmask();
-			this.hitmask.scale = 8;
-			this.hitmask.verticalFrames = 4;				// normal | hover | down | disabled
-			this.hitmask.drawHitmask = true;				// set to 'false' to disable drawing of hitmask over btn image
-			this.hitmask.setImage(this.animSheet.image);
-			
-			this.parent(x, y, settings);
-		},
-		update: function() {
-			this.parent();
-			
-			this.btnStateMachine.updateState();
-		}
-	});
-});
+		});
 
-</pre>
+* DemoGamebtn.js
+
+		// -------------------------------------------------------------------------------------------------------------
+		// DemoGamebtn.js
+		// -------------------------------------------------------------------------------------------------------------
+		ig.module(
+			'game.entities.demogamebtn'
+		)
+		.requires(
+			'plugins.scaled-alpha-hitmask',
+			'plugins.button-state-machine',
+			'impact.entity'
+		)
+		.defines(function() {
+			EntityDemoGamebtn = ig.Entity.extend({
+				size: {x: 16, y: 16},
+				
+				btnStateMachine: null,
+				hitmask: null,
+				
+				// -------------------------------------------------------------------------------------------------------------
+				// Button States
+				// -------------------------------------------------------------------------------------------------------------
+				endClick: function() { this.currentAnim = this.anims.btnNormal;	},
+				endClickIgnore: function() { this.currentAnim = this.anims.btnNormal; },
+				endHover: function() { this.currentAnim = this.anims.btnNormal;	},
+				startClick: function() { this.currentAnim = this.anims.btnDown;	},
+				startHover: function() { this.currentAnim = this.anims.btnHover; },
+				
+				// -------------------------------------------------------------------------------------------------------------
+				// Alpha Hit Detection
+				// -------------------------------------------------------------------------------------------------------------
+				// hittest - returns true if mouse cursor within bounds, else false
+				hittest: function() {
+					if ((ig.input.mouse.x > this.pos.x && ig.input.mouse.x < (this.pos.x + this.size.x)) &&
+						(ig.input.mouse.y > this.pos.y && ig.input.mouse.y < (this.pos.y + this.size.y)))
+					{
+						// if we have hitmask defined then check if we inside or outside of hitmask,
+						// if no hitmask then we already inside and return true
+						if (this.hitmask) {
+							return this.hitmask.hittest(ig.input.mouse.x - this.pos.x, ig.input.mouse.y - this.pos.y, 0 /* we only interested in frame 0 so no need to pass any other*/);
+						} else {
+							return true;
+						}
+					}
+					return false;						// hittest failed - mouse outside of entity
+				},
+				init: function(x, y, settings) {
+					
+					this.animSheet = new ig.AnimationSheet('media/btns/' + settings.image , settings.width, settings.height);
+					this.addAnim('btnNormal', 1, [0]);
+					this.addAnim('btnHover', 2, [1]);
+					this.addAnim('btnDown', 3, [2]);
+					this.addAnim('btnDisabled', 4, [3]);
+					this.currentAnim = this.anims.btnNormal;
+					this.size.x = settings.width;
+					this.size.y = settings.height;
+					
+					// ...
+					// ...
+					this.btnStateMachine = new ig.ButtonStateMachine();
+					this.btnStateMachine.isMouseInside = this.hittest.bind(this);
+					this.btnStateMachine.isMouseDown = function() { return ig.input.state('click'); };
+					this.btnStateMachine.startClick = this.startClick.bind(this);
+					this.btnStateMachine.endClick = this.endClick.bind(this);
+					this.btnStateMachine.startHover = this.startHover.bind(this);
+					this.btnStateMachine.endHover = this.endHover.bind(this);
+					this.btnStateMachine.endClickIgnore = this.endClickIgnore.bind(this);
+					
+					this.hitmask = new ig.ScaledAlphaHitmask();
+					this.hitmask.scale = 8;
+					this.hitmask.verticalFrames = 4;				// normal | hover | down | disabled
+					this.hitmask.drawHitmask = true;				// set to 'false' to disable drawing of hitmask over btn image
+					this.hitmask.setImage(this.animSheet.image);
+					
+					this.parent(x, y, settings);
+				},
+				update: function() {
+					this.parent();
+					
+					this.btnStateMachine.updateState();
+				}
+			});
+		});
 
 
 ## Methods
