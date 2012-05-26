@@ -48,7 +48,7 @@ MyGame = ig.Game.extend({
 	  
 	  
 		// Test DemoGameBtn
-		var demoGamebtn = ig.game.spawnEntity(EntityDemoGamebtn, 100, 100, { image: '5RV3_EG_Gamble.00000320.png', width: 106, height: 120});
+		var demoGamebtn = ig.game.spawnEntity(EntityDemoGamebtn, 100, 100, { image: 'samplebtn.png', width: 106, height: 120});
 		
 		window.focus();
 		ig.system.canvas.onclick = function() {
