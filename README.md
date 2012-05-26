@@ -1,7 +1,7 @@
 
 # ScaledAlphaHitmask - Hitmask plugin for ImpactJS game engine
 
-The `ScaledAlphaHitmask` is a plugin for the ImpactJS game engine and facilitates hit detection on transparent images.
+`ScaledAlphaHitmask` is a plugin for the ImpactJS game engine and facilitates hit detection on transparent images.
 It is intended to be used to detect mouse clicks on partially transparent buttons. The hitmask is derived from the alpha channel of the button image. A scaling factor can be set to reduce the size of the hitmask. After initial creation of the hitmask we can call the ``hittest(...)`` function in our button's `update()` handler, passing in the *relative* x,y coordinates of the mouse. 
 
 
