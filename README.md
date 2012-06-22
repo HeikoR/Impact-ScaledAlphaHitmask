@@ -143,6 +143,76 @@ It is intended to be used to detect mouse clicks on partially transparent button
 		});
 
 
+## Simple (minimal) example
+
+* The sample code below demonstrates how to create a simple entity that uses the `ScaledAlphaHitmask` plugin.
+
+* To run the demo code
+	* place the `ScaledAlphaHitmask.js` plugin into your `[Project]/lib/plugins` directory.
+	* place a `3DBall_2frames.png` image into your `[Project]/media/` directory.
+		(Note: to test the `ScaledAlphaHitmask` this image needs to have an alpha channel with transparent and non-transparent pixels)
+	* copy relevant code from `main.js` snippet into your own `main.js` code.
+
+* main.js
+
+		// -------------------------------------------------------------------------------------------------------------
+		// main.js
+		// -------------------------------------------------------------------------------------------------------------
+		ig.module( 
+			'game.main' 
+		)
+		.requires(
+			'impact.game',
+			'plugins.scaled-alpha-hitmask'
+		)
+		.defines(function(){
+
+		MyEntity = ig.Entity.extend({
+				hitmask: null,
+				size: {x: 128, y: 128},
+				init: function(x, y, settings) {
+					// Add the animations
+					this.animSheet = new ig.AnimationSheet( 'media/3dball_2frames.png', 128, 128 ),		
+					this.addAnim( 'frame1', 1, [0] );
+					this.addAnim( 'frame2', 1, [1] );
+					this.currentAnim = this.anims.frame1;
+
+					this.hitmask = new ig.ScaledAlphaHitmask();
+					// this.hitmask.drawHitmask = true;		// don't draw debug mask over image
+					this.hitmask.scale = 4;
+					this.hitmask.setImage(this.animSheet.image);
+					this.parent(x, y, settings);
+				},
+				update: function() {
+					this.parent();
+					if (ig.input.pressed('click')) {
+						if (this.hitmask.entityHittest(this)) {			// test if we hit opaque pixel in entity (animation/image frame1)
+							if (this.currentAnim == this.anims.frame1)
+								this.currentAnim = this.anims.frame2;
+							else
+								this.currentAnim = this.anims.frame1;
+						}
+					}
+				}
+		});
+
+		MyGame = ig.Game.extend({
+			myentity: null,
+			
+			init: function() {
+				// Initialize your game here; bind keys etc.
+				ig.input.bind(ig.KEY.MOUSE1, 'click');
+
+				this.myentity = this.spawnEntity(MyEntity, 10, 10); 
+			},
+		});
+
+		// Start the Game with 60fps, a resolution of 160x160, scaled up by a factor of 2
+		ig.main( '#canvas', MyGame, 60, 160, 160, 2 );
+
+		});
+
+
 ## Methods
 
 * `createDebugImage()`
@@ -150,6 +220,9 @@ It is intended to be used to detect mouse clicks on partially transparent button
 	- This function is only intended for debugging purposes to show what the hitmask created looks like.
 		The *white* parts of the image will result in hit *'misses'* and the *black* parts of the image will result in *'hits'* .
 	- To enable drawing of the debug image set `drawHitmask` to `true`.
+* `entityHittest(entity)`
+	- Test if mouse inside or outside of entity, and if mouse inside then test if we hit opaque pixel.
+	- Returns `true` if we hit opaque pixel inside entity, else `false`.
 * `hittest(xHitOffset, yHitOffset, frameIdx)`
 	- Test pixel at `xHitOffset, yHitOffset` for currently active image frame (`frameIdx`)
 	- Recommend passing in '0' for `frameIdx` to always test on the first (default) frame (i.e. button state: normal)
@@ -190,8 +263,6 @@ It is intended to be used to detect mouse clicks on partially transparent button
 ## Still Todo, and Bugs to be fixed (if required or requested)
 
 * Test changing hitmask by changing the hitmask input image. (Currently not required to change hitmask once loaded, but should hopefully work) 
-* What happens if the whole system is scaled by a factor (`ig.system.scale`) ?
-	- We will probably have to add ig.system.scale into our calculations.
 * *Feedback welcome here ...*
 
 ## Future Improvements
