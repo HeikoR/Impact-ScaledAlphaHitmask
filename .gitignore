@@ -1,3 +1,23 @@
 README.html
 *.swp
+*.bak
+
+## Ignore ImpactJS source
+demo1/node_modules/
+demo1/views/
+demo1/public/lib/impact/
+demo1/public/lib/weltmeister/
+demo1/public/tools/
+demo1/public/weltmeister.html
+
+## Ignore Gimp Project files
+*.xcf
+
+
+## Ignore Sublime Project files
+*.sublime-project
+*.sublime-workspace
+
+## Ignore Node Server
+server.js
 
