@@ -5,6 +5,7 @@
 It is intended to be used to detect mouse clicks on partially transparent buttons. The hitmask is derived from the alpha channel of the button image. A scaling factor can be set to reduce the size of the hitmask. After initial creation of the hitmask we can call the ``hittest(...)`` function in our button's `update()` handler, passing in the *relative* x,y coordinates of the mouse. 
 
 *(see also link to ImpactJS forum article: [ImpactForum][])*
+
 *(added new minimal example - after GameButton example)*
 
 ## GameButton example
