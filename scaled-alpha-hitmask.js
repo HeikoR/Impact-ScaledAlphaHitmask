@@ -2,8 +2,10 @@
 // Author     : Heiko W. Risser
 // Created    : May 2012
 // SourceLink : https://github.com/HeikoR/Impact-ScaledAlphaHitmask
-// Revision   : 1.1 (updated 22 June 2012)
 // Whitespace : formatted with tabs, 4 spaces/tab
+// Revision   : 1.2 (updated 05 August 2012)
+//            : added support for pre-loading of hitmask
+// Revision   : 1.1 (updated 22 June 2012)
 
 ig.module (
 	'plugins.scaled-alpha-hitmask'
@@ -108,8 +110,18 @@ ig.module (
 			}
 			return false;
 		},
-		init: function() {
-			
+		init: function(imagepath, options) {
+			if (options) {
+				this.scale = options.scale || 1;
+				this.verticalFrames = options.verticalFrames || 1;
+				this.drawHitmask = options.drawHitmask || false;
+			}
+			if (imagepath) {
+				this.image = new ig.Image(imagepath);					// this will add new image if not yet loaded, else use existing image
+																		// NB: required for pre-loading, since we need to pre-load image, 
+																		//     and then pre-load hitmask after image is loaded
+				ig.Image.hitmask[imagepath] = this;
+			}
 		},
 		loadHitmask: function() {
 			if (this.isLoaded)											// don't reload if already loaded
@@ -196,6 +208,10 @@ ig.module (
 			if (this.image.loaded)					// if image is already loaded, then load hitmask here
 				this.loadHitmask();
 		},
+		staticInstantiate: function(imagepath, options) {
+			return ig.Image.hitmask[imagepath] || null;
+		},
+
 		reset: function() {
 			if (this.image)							// if we have an existing image assigned, then reset image's callback before we unreference the image
 				this.image.loadHitmask = null;
@@ -213,11 +229,30 @@ ig.module (
 		loadHitmask: null,							// if image used to derive hitmask, then this callback will be set by ScaledAlphaHitmask to notify when image loading completed
 		
 		onload: function(event) {
+			// if loadCallback defined, we save callback and then set it to null. 
+			// reason being that callback completes pre-loading of image, but we first want to complete loading of hitmask before we call
+			// loadCallback to complete pre-loading
+			if( this.loadCallback ) {
+				this._loadCallback = this.loadCallback;
+				this.loadCallback = null;
+			}
 			this.parent(event);
 			
-			if (this.loadHitmask)
+			if (this.loadHitmask) {
 				this.loadHitmask();
+			}
+			else if (ig.Image.hitmask[this.path]) {
+				ig.Image.hitmask[this.path].setImage(this);
+			}
+
+			// Call loadCallback to complete image loading. When image is being pre-loaded, this will tell the loader that 
+			// image has completed loading
+			if( this._loadCallback ) {
+				this._loadCallback( this.path, true );
+			}
 		}
 	});
+	ig.Image.hitmask = {};			// Create global cache of hitmasks. This is used in pre-loading stage, and to prevent 
+									// multiple hitmask instances to be created for an image
 });
 
